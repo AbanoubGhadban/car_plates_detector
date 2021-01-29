@@ -10,8 +10,8 @@ import importlib.util
 import pytesseract
 import re
 
-tesseract_path = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
-pytesseract.pytesseract.tesseract_cmd = tesseract_path
+# tesseract_path = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
+# pytesseract.pytesseract.tesseract_cmd = tesseract_path
 
 class NumbersExtractor:
     def __init__(self) -> None:
@@ -97,10 +97,9 @@ class NumbersExtractor:
             gray = img
         else:
             gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-        thresh = gray.copy()# cv2.threshold(gray, 127, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)[1]
-        t_h, t_w = thresh.shape
+        t_h, t_w = gray.shape
         bordered_img = np.full((t_h + 10, t_w + 10), 255, dtype=np.uint8)
-        bordered_img[5:t_h+5, 5:t_w+5] = thresh
+        bordered_img[5:t_h+5, 5:t_w+5] = gray
         return bordered_img
 
     def get_plate_type(self, img):

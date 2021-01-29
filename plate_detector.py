@@ -1,4 +1,3 @@
-import tensorflow.lite as tflite
 import os
 import argparse
 import cv2
@@ -8,9 +7,15 @@ import time
 from threading import Thread
 import importlib.util
 
+pkg = importlib.util.find_spec('tflite_runtime')
+if pkg:
+    from tflite_runtime.interpreter import Interpreter
+else:
+    from tensorflow.lite.python.interpreter import Interpreter
+
 class PlateDetector:
     def __init__(self, model_path: str):
-        self.interpreter = tflite.Interpreter(model_path=model_path)
+        self.interpreter = Interpreter(model_path=model_path)
         self.interpreter.allocate_tensors()
         self.input_details = self.interpreter.get_input_details()
         self.output_details = self.interpreter.get_output_details()
