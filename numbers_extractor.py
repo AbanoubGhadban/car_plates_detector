@@ -67,7 +67,7 @@ class NumbersExtractor:
         h_hist = np.sum(gaus,axis=0).tolist()
         h_peaks = self._get_peaks(h_hist)
         if len(h_peaks) < 9:
-            return None
+            return None, None
         min_x = self._get_min_x(h_peaks, h_hist)
         max_x = self.get_max_x(h_peaks, h_hist)
         sub_img = gaus[:, min_x:max_x]
@@ -75,7 +75,7 @@ class NumbersExtractor:
         v_hist = np.sum(sub_img, axis=1).tolist()
         v_peaks = self._get_peaks(v_hist)
         if len(v_peaks) < 3:
-            return None
+            return None, None
         min_y = self.get_min_y(v_peaks, v_hist)
         max_y = self.get_max_y(v_peaks, v_hist)
         first_number = gaus[int(.1*img_h):min_y, min_x:int(min_x + .2*img_w)]
