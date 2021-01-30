@@ -1,3 +1,4 @@
+from plates_monitor import PlatesMonitor
 from numbers_extractor import NumbersExtractor
 from plate_detector import PlateDetector
 import tensorflow.lite as tflite
@@ -10,6 +11,8 @@ import time
 from threading import Thread
 import importlib.util
 import pathlib
+
+white_list_numbers = ["11-12005", "735423", "223684"]
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--model', help='Provide the path to the TFLite file, default is models/model.tflite',
@@ -64,6 +67,7 @@ class VideoStream:
 detector = PlateDetector(PATH_TO_MODEL_DIR)
 extractor = NumbersExtractor()
 videostream = VideoStream(resolution=(480,480),framerate=30).start()
+platemonitor = PlatesMonitor(white_list_numbers)
 time.sleep(1)
 
 while True:
