@@ -127,6 +127,6 @@ class NumbersExtractor:
             return 1
 
     def get_type1_region(self, img):
-        img_h, img_w = img.shape
+        img_h, img_w = img.shape[0], img.shape[1]
         sub_img = img[int(0.15*img_h):int(0.89552*img_h), int(0.32*img_w):int(0.95*img_w)]
         return sub_img
