@@ -26,7 +26,7 @@ IMAGE_PATH = args.image
 
 extractor = NumbersExtractor()
 image = cv2.imread(IMAGE_PATH)
-r = extractor.get_numbers_region(image)
+rr, r = extractor.get_type0_regions(image)
 print(extractor.plate_to_text(image))
 cv2.imshow('eee', r)
 cv2.waitKey()

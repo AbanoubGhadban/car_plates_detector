@@ -31,7 +31,7 @@ image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 boxes = detector.get_plates_bounding_boxes(image_rgb)
 for i in range(len(boxes)):
     (minx, miny), (maxx, maxy) = boxes[i]
-    n_img = extractor.get_numbers_region(image_rgb[miny:maxy, minx:maxx])
+    t_img, n_img = extractor.get_type0_regions(image_rgb[miny:maxy, minx:maxx])
     if n_img is not None and n_img.size > 0:
         cv2.imshow(f'w{i}', n_img)
         preprocessed = extractor.preprocess_numbers(n_img)

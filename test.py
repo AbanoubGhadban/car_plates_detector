@@ -35,7 +35,7 @@ for img_path in pathlib.Path(IMAGES_PATH).glob("*.jpg"):
     boxes = detector.get_plates_bounding_boxes(image_cpy)
     for i in range(len(boxes)):
         (minx, miny), (maxx, maxy) = boxes[i]
-        n_img = extractor.get_numbers_region(image_cpy[miny:maxy, minx:maxx])
+        t_img, n_img = extractor.get_type0_regions(image_cpy[miny:maxy, minx:maxx])
 
         text = extractor.plate_to_text(image_cpy[miny:maxy, minx:maxx])
         if n_img is not None and n_img.size > 0 and text is not None:

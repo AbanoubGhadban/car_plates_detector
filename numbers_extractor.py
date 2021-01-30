@@ -9,9 +9,11 @@ from threading import Thread
 import importlib.util
 import pytesseract
 import re
+import platform
 
-# tesseract_path = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
-# pytesseract.pytesseract.tesseract_cmd = tesseract_path
+if platform.system().lower() == 'windows':
+    tesseract_path = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
+    pytesseract.pytesseract.tesseract_cmd = tesseract_path
 
 class NumbersExtractor:
     def __init__(self) -> None:
@@ -57,12 +59,10 @@ class NumbersExtractor:
             return peaks[len(peaks) - 2]
         return peaks[len(peaks) - 1]
 
-    def get_numbers_region(self, img: np.ndarray):
+    def get_type0_regions(self, img: np.ndarray):
         img_h, img_w, _ = img.shape
         gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
         gaus = cv2.GaussianBlur(gray, (5, 5), 0)
-        if self.get_plate_type(gaus) == 1:
-            return self.get_type1_region(gaus)
         
         h_hist = np.sum(gaus,axis=0).tolist()
         h_peaks = self._get_peaks(h_hist)
@@ -70,7 +70,7 @@ class NumbersExtractor:
             return None
         min_x = self._get_min_x(h_peaks, h_hist)
         max_x = self.get_max_x(h_peaks, h_hist)
-        sub_img = gaus[:, min_x:max_x,]
+        sub_img = gaus[:, min_x:max_x]
 
         v_hist = np.sum(sub_img, axis=1).tolist()
         v_peaks = self._get_peaks(v_hist)
@@ -78,18 +78,34 @@ class NumbersExtractor:
             return None
         min_y = self.get_min_y(v_peaks, v_hist)
         max_y = self.get_max_y(v_peaks, v_hist)
-        return gaus[min_y:max_y, min_x:max_x]
+        first_number = gaus[int(.1*img_h):min_y, min_x:int(min_x + .2*img_w)]
+        second_number = gaus[min_y:max_y, min_x:max_x]
+        return first_number, second_number
 
     def plate_to_text(self, img):
         if img is None or img.size == 0:
             return None
-        text_region = self.get_numbers_region(img)
-        if text_region is None or text_region.size == 0:
+
+        if self.get_plate_type(img) == 1:
+            text_region = self.get_type1_region(img)
+            if text_region is None or text_region.size == 0:
+                return None
+            preprocessed = self.preprocess_numbers(text_region)
+            data = pytesseract.image_to_string(preprocessed, lang ='eng', config ='--oem 3 -l eng --psm 6 -c tessedit_char_whitelist=0123456789')
+            return re.sub('[^0-9]', '', data.__str__())
+        
+        
+        top_row, text_region = self.get_type0_regions(img)
+        if text_region is None or text_region.size == 0 or top_row is None or top_row.size == 0:
             return None
 
-        preprocessed = self.preprocess_numbers(text_region)
-        data = pytesseract.image_to_string(preprocessed, lang ='eng', config ='--oem 3 -l eng --psm 6 -c tessedit_char_whitelist=0123456789')
-        return re.sub('[^0-9]', '', data.__str__())
+        preprocessed1 = self.preprocess_numbers(text_region)
+        preprocessed2 = self.preprocess_numbers(top_row)
+        data1 = pytesseract.image_to_string(preprocessed1, lang ='eng', config ='--oem 3 -l eng --psm 6 -c tessedit_char_whitelist=0123456789')
+        data2 = pytesseract.image_to_string(preprocessed2, lang ='eng', config ='--oem 3 -l eng --psm 6 -c tessedit_char_whitelist=0123456789')
+        data1_str = re.sub('[^0-9]', '', data1.__str__())
+        data2_str = re.sub('[^0-9]', '', data2.__str__())
+        return f'{data2_str}-{data1_str}'
 
     def preprocess_numbers(self, img):
         print(img.shape)
